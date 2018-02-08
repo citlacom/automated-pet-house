@@ -1,4 +1,8 @@
 #include <LedControl.h>
+#include <idDHTLib.h>
+
+// DHT11 sensor connection.
+#define DHT_PIN 2
 
 // Digit screen connections.
 #define DATA_PIN A0
@@ -7,6 +11,9 @@
 
 LedControl lc = LedControl(DATA_PIN, CLOCK_PIN, CS_PIN, 1);
 
+// Lib instantiate
+idDHTLib DHTLib(DHT_PIN, idDHTLib::DHT11);
+
 void setup() {
     lc.shutdown(0, false);
     lc.setIntensity(0, 10);
@@ -14,8 +21,32 @@ void setup() {
 }
 
 void loop() {
-    left_screen_print_number(1313);
-    right_screen_print_number(1313);
+    int result = DHTLib.acquireAndWait();
+
+    // There is a lecture error.
+    if (result != IDDHTLIB_OK) {
+        screen_alert_error();
+    }
+    else {
+        // There is a lecture error.
+        left_screen_print_number((int) DHTLib.getCelsius());
+        right_screen_print_number((int) DHTLib.getHumidity());
+
+        // DHT11 sampling rate is 1HZ.
+    }
+
+    delay(2000);
+}
+
+void screen_alert_error() {
+    lc.setChar(0, 0, 'E', false);
+    lc.setChar(0, 1, 'E', false);
+    lc.setChar(0, 2, 'E', false);
+    lc.setChar(0, 3, 'E', false);
+    lc.setChar(0, 4, 'E', false);
+    lc.setChar(0, 5, 'E', false);
+    lc.setChar(0, 6, 'E', false);
+    lc.setChar(0, 7, 'E', false);
 }
 
 // Print multi-digit number on the left screen.
