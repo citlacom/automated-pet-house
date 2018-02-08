@@ -1,8 +1,13 @@
 #include <LedControl.h>
 #include <idDHTLib.h>
 
+// Relay connection.
+#define RELAY_PIN A3
+
 // DHT11 sensor connection.
 #define DHT_PIN 2
+// Maximum tolerated DHT lecture failures before react to stop heat.
+#define MAX_LECTURE_FAILURES 30
 
 // Digit screen connections.
 #define DATA_PIN A0
@@ -13,28 +18,58 @@ LedControl lc = LedControl(DATA_PIN, CLOCK_PIN, CS_PIN, 1);
 
 // Lib instantiate
 idDHTLib DHTLib(DHT_PIN, idDHTLib::DHT11);
+int count_fail_lectures = 0;
 
 void setup() {
     lc.shutdown(0, false);
     lc.setIntensity(0, 10);
     lc.clearDisplay(0);
+    // Enable the RELAY pin.
+    pinMode(RELAY_PIN, OUTPUT);
+    // Start the RELAY closed in normally as is connected NC mode.
+    digitalWrite(RELAY_PIN, LOW);
 }
 
 void loop() {
     int result = DHTLib.acquireAndWait();
+    int temperature = 0;
+    int humidity = 0;
 
     // There is a lecture error.
     if (result != IDDHTLIB_OK) {
         screen_alert_error();
+        count_fail_lectures++;
     }
     else {
-        // There is a lecture error.
-        left_screen_print_number((int) DHTLib.getCelsius());
-        right_screen_print_number((int) DHTLib.getHumidity());
-
-        // DHT11 sampling rate is 1HZ.
+        // Get temperature and humidity lecture.
+        temperature = (int) DHTLib.getCelsius();
+        humidity = (int) DHTLib.getHumidity();
+        left_screen_print_number(temperature);
+        right_screen_print_number(humidity);
+        // Good lecture, reset counter so we protect false detection of sensor
+        // failure that force to stop heat to prevent burn your pet.
+        count_fail_lectures = 0;
     }
 
+    // When humidity or temperature reach a threshold stop heat
+    // due starts to be an incomfortable levels.
+    if (humidity <= 40 || temperature > 32) {
+        digitalWrite(RELAY_PIN, LOW);
+    }
+
+    // Something is going wrong with DHT sensor so we need to fallback
+    // on turning relay off.
+    if (count_fail_lectures >= MAX_LECTURE_FAILURES) {
+        digitalWrite(RELAY_PIN, LOW);
+    }
+
+    // Ensure that we have a minimum of humidity so when temperature
+    // reach hour low threshold is time to turn on heat.
+    if (humidity >= 50 && temperature <= 20) {
+        digitalWrite(RELAY_PIN, HIGH);
+    }
+
+    // DHT11 sampling rate is 1HZ.
     delay(2000);
 }
 
