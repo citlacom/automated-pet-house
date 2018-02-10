@@ -64,19 +64,19 @@ void loop() {
 
     // When humidity or temperature reach a threshold stop heat
     // due starts to be an incomfortable levels.
-    if (humidity <= MIN_HUMIDITY || temperature > MAX_TEMPERATURE) {
+    if (humidity < MIN_HUMIDITY || temperature > MAX_TEMPERATURE) {
         digitalWrite(RELAY_PIN, LOW);
     }
 
     // Something is going wrong with DHT sensor so we need to fallback
     // on turning relay off.
-    if (count_fail_lectures >= MAX_LECTURE_FAILURES) {
+    if (count_fail_lectures > MAX_LECTURE_FAILURES) {
         digitalWrite(RELAY_PIN, LOW);
     }
 
     // Ensure that we have a minimum of humidity so when temperature
     // reach hour low threshold is time to turn on heat.
-    if (humidity >= MIN_HUMIDITY && temperature <= MIN_HUMIDITY) {
+    if (humidity >= MIN_HUMIDITY && temperature < MIN_TEMPERATURE) {
         digitalWrite(RELAY_PIN, HIGH);
     }
 
