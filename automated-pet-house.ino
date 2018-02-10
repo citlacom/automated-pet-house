@@ -14,6 +14,17 @@
 #define CS_PIN A1
 #define CLOCK_PIN A2
 
+/////////////////////////////////////////////////
+// Control tresholds of humidity and temperature.
+/////////////////////////////////////////////////
+
+// Minimum temperature to trigger heat on.
+#define MIN_TEMPERATURE 20
+// Maximum temperature to trigger heat off.
+#define MAX_TEMPERATURE 35
+// Min humidity to trigger heat off.
+#define MIN_HUMIDITY 30
+
 LedControl lc = LedControl(DATA_PIN, CLOCK_PIN, CS_PIN, 1);
 
 // Lib instantiate
@@ -53,7 +64,7 @@ void loop() {
 
     // When humidity or temperature reach a threshold stop heat
     // due starts to be an incomfortable levels.
-    if (humidity <= 40 || temperature > 32) {
+    if (humidity <= MIN_HUMIDITY || temperature > MAX_TEMPERATURE) {
         digitalWrite(RELAY_PIN, LOW);
     }
 
@@ -65,7 +76,7 @@ void loop() {
 
     // Ensure that we have a minimum of humidity so when temperature
     // reach hour low threshold is time to turn on heat.
-    if (humidity >= 50 && temperature <= 20) {
+    if (humidity >= MIN_HUMIDITY && temperature <= MIN_HUMIDITY) {
         digitalWrite(RELAY_PIN, HIGH);
     }
 
