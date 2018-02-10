@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////
 
 // Minimum temperature to trigger heat on.
-#define MIN_TEMPERATURE 20
+#define MIN_TEMPERATURE 25
 // Maximum temperature to trigger heat off.
 #define MAX_TEMPERATURE 35
 // Min humidity to trigger heat off.
