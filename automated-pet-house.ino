@@ -109,6 +109,7 @@ void left_screen_print_number(int v) {
     hundreds = v%10;
     thousands = v/10;
 
+    lc.clearDisplay(0);
     // Now print the number digit by digit
     lc.setDigit(0, 3, (byte)thousands, false);
     lc.setDigit(0, 2, (byte)hundreds, false);
@@ -130,6 +131,7 @@ void right_screen_print_number(int v) {
     hundreds = v%10;
     thousands = v/10;
 
+    lc.clearDisplay(0);
     // Now print the number digit by digit
     lc.setDigit(0, 7, (byte)thousands, false);
     lc.setDigit(0, 6, (byte)hundreds, false);
