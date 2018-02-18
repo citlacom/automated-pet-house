@@ -106,6 +106,12 @@ void screen_print_number(int number) {
         return;
     }
 
+    // Fallback when number is zero.
+    if (number == 0) {
+        lc.setDigit(0, screen_position, number, false);
+        screen_position++;
+    }
+
     Serial.println(number);
     while (number != 0) {
         short int digit = (number % 10);
