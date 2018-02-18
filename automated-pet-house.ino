@@ -30,6 +30,7 @@ LedControl lc = LedControl(DATA_PIN, CLOCK_PIN, CS_PIN, 1);
 // Lib instantiate
 idDHTLib DHTLib(DHT_PIN, idDHTLib::DHT11);
 int count_fail_lectures = 0;
+int screen_position = 7;
 
 void setup() {
     lc.shutdown(0, false);
@@ -39,6 +40,7 @@ void setup() {
     pinMode(RELAY_PIN, OUTPUT);
     // Start the RELAY closed in normally as is connected NC mode.
     digitalWrite(RELAY_PIN, LOW);
+    Serial.begin(9600);
 }
 
 void loop() {
@@ -55,9 +57,9 @@ void loop() {
         // Get temperature and humidity lecture.
         temperature = (int) DHTLib.getCelsius();
         humidity = (int) DHTLib.getHumidity();
-        lc.clearDisplay(0);
-        left_screen_print_number(temperature);
-        right_screen_print_number(humidity);
+        screen_clear();
+        screen_print_number(temperature);
+        screen_print_number(humidity);
         // Good lecture, reset counter so we protect false detection of sensor
         // failure that force to stop heat to prevent burn your pet.
         count_fail_lectures = 0;
@@ -88,52 +90,33 @@ void loop() {
 void screen_alert_error() {
     lc.setChar(0, 0, 'E', false);
     lc.setChar(0, 1, 'E', false);
-    lc.setChar(0, 2, 'E', false);
-    lc.setChar(0, 3, 'E', false);
-    lc.setChar(0, 4, 'E', false);
-    lc.setChar(0, 5, 'E', false);
-    lc.setChar(0, 6, 'E', false);
-    lc.setChar(0, 7, 'E', false);
 }
 
 // Print multi-digit number on the left screen.
-void left_screen_print_number(int v) {
-    int ones;
-    int tens;
-    int hundreds;
-    int thousands;
+void screen_print_number(int number) {
+    if (screen_position < 0) {
+        Serial.println("No more slots in the screen.");
+        return;
+    }
 
-    ones = v%10;
-    v = v/10;
-    tens = v%10;
-    v = v/10;
-    hundreds = v%10;
-    thousands = v/10;
+    Serial.println(number);
+    while (number != 0) {
+        short int digit = (number % 10);
+        // Print digit on next screen position.
+        lc.setDigit(0, screen_position, (byte)digit, false);
+        number /= 10;
+        // Increment screen position.
+        screen_position++;
+        Serial.println(screen_position);
+    }
 
-    // Now print the number digit by digit
-    lc.setDigit(0, 3, (byte)thousands, false);
-    lc.setDigit(0, 2, (byte)hundreds, false);
-    lc.setDigit(0, 1, (byte)tens, false);
-    lc.setDigit(0, 0, (byte)ones, false);
+    // Print dash separator.
+    Serial.println(screen_position);
+    lc.setChar(0, screen_position, '-', false);
+    screen_position++;
 }
 
-// Print multi-digit number on the right screen.
-void right_screen_print_number(int v) {
-    int ones;
-    int tens;
-    int hundreds;
-    int thousands;
-
-    ones = v%10;
-    v = v/10;
-    tens = v%10;
-    v = v/10;
-    hundreds = v%10;
-    thousands = v/10;
-
-    // Now print the number digit by digit
-    lc.setDigit(0, 7, (byte)thousands, false);
-    lc.setDigit(0, 6, (byte)hundreds, false);
-    lc.setDigit(0, 5, (byte)tens, false);
-    lc.setDigit(0, 4, (byte)ones, false);
+void screen_clear() {
+    lc.clearDisplay(0);
+    screen_position = 0;
 }
