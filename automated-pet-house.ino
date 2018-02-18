@@ -46,7 +46,7 @@ void setup() {
     // Start the RELAY closed in normally as is connected NC mode.
     digitalWrite(RELAY_PIN, LOW);
     // Start the flame sensor PIN.
-    pinMode(FLAME_PIN, OUTPUT);
+    pinMode(FLAME_PIN, INPUT);
     // Start serial communication.
     Serial.begin(9600);
 }
