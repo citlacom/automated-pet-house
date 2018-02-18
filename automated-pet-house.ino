@@ -14,6 +14,9 @@
 #define CS_PIN A1
 #define CLOCK_PIN A2
 
+// Flame sensor.
+#define FLAME_PIN 3
+
 /////////////////////////////////////////////////
 // Control tresholds of humidity and temperature.
 /////////////////////////////////////////////////
@@ -31,6 +34,8 @@ LedControl lc = LedControl(DATA_PIN, CLOCK_PIN, CS_PIN, 1);
 idDHTLib DHTLib(DHT_PIN, idDHTLib::DHT11);
 int count_fail_lectures = 0;
 int screen_position = 7;
+int temperature = 0;
+int humidity = 0;
 
 void setup() {
     lc.shutdown(0, false);
@@ -40,30 +45,37 @@ void setup() {
     pinMode(RELAY_PIN, OUTPUT);
     // Start the RELAY closed in normally as is connected NC mode.
     digitalWrite(RELAY_PIN, LOW);
+    // Start the flame sensor PIN.
+    pinMode(FLAME_PIN, OUTPUT);
+    // Start serial communication.
     Serial.begin(9600);
 }
 
 void loop() {
     int result = DHTLib.acquireAndWait();
-    int temperature = 0;
-    int humidity = 0;
+    int flame = digitalRead(FLAME_PIN);
+    Serial.print("Flame: ");
+    Serial.println(flame);
+
+    // Clean screen.
+    screen_clear();
 
     // There is a lecture error.
     if (result != IDDHTLIB_OK) {
-        screen_alert_error();
         count_fail_lectures++;
     }
     else {
         // Get temperature and humidity lecture.
         temperature = (int) DHTLib.getCelsius();
         humidity = (int) DHTLib.getHumidity();
-        screen_clear();
-        screen_print_number(temperature);
-        screen_print_number(humidity);
         // Good lecture, reset counter so we protect false detection of sensor
         // failure that force to stop heat to prevent burn your pet.
         count_fail_lectures = 0;
     }
+
+    screen_print_number(temperature);
+    screen_print_number(humidity);
+    screen_print_number(flame);
 
     // When humidity or temperature reach a threshold stop heat
     // due starts to be an incomfortable levels.
@@ -85,11 +97,6 @@ void loop() {
 
     // DHT11 sampling rate is 1HZ.
     delay(2000);
-}
-
-void screen_alert_error() {
-    lc.setChar(0, 0, 'E', false);
-    lc.setChar(0, 1, 'E', false);
 }
 
 // Print multi-digit number on the left screen.
