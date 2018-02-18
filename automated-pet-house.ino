@@ -33,7 +33,7 @@ int count_fail_lectures = 0;
 
 void setup() {
     lc.shutdown(0, false);
-    lc.setIntensity(0, 10);
+    lc.setIntensity(0, 4);
     lc.clearDisplay(0);
     // Enable the RELAY pin.
     pinMode(RELAY_PIN, OUTPUT);
