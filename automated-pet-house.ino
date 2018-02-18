@@ -14,8 +14,11 @@
 #define CS_PIN A1
 #define CLOCK_PIN A2
 
-// Flame sensor.
+// Flame sensor connection.
 #define FLAME_PIN 3
+
+// Active buzzer connection.
+#define BUZZER_PIN 4
 
 /////////////////////////////////////////////////
 // Control tresholds of humidity and temperature.
@@ -45,8 +48,10 @@ void setup() {
     pinMode(RELAY_PIN, OUTPUT);
     // Start the RELAY closed in normally as is connected NC mode.
     digitalWrite(RELAY_PIN, LOW);
-    // Start the flame sensor PIN.
+    // Start the flame sensor.
     pinMode(FLAME_PIN, INPUT);
+    // Start the buzzer.
+    pinMode(BUZZER_PIN, OUTPUT);
     // Start serial communication.
     Serial.begin(9600);
 }
@@ -71,6 +76,15 @@ void loop() {
         // Good lecture, reset counter so we protect false detection of sensor
         // failure that force to stop heat to prevent burn your pet.
         count_fail_lectures = 0;
+    }
+
+    // Control fire alarm.
+    if (flame) {
+        // Sound the alarm when flame is detected.
+        digitalWrite(BUZZER_PIN, HIGH);
+    }
+    else {
+        digitalWrite(BUZZER_PIN, LOW);
     }
 
     screen_print_number(temperature);
